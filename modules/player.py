@@ -1,8 +1,8 @@
 import pygame
 from .frect import FRect
-from math import sqrt
+from .entity import Entity
 
-class Player:
+class Player(Entity):
 
     def __init__(self, master):
 
@@ -19,9 +19,9 @@ class Player:
         self.direction = pygame.Vector2(1, 0)
         self.input_direc = pygame.Vector2(0, 0)
         self.velocity = pygame.Vector2(0, 0)
-        self.acceleration = 0.1
-        self.deceleration = 0.8
-        self.max_speed = 4
+        self.acceleration = 0.8
+        self.deceleration = 1.2
+        self.max_speed = 3
         self.dash_speed = 12
         self.moving = False
         self.dashing = False
@@ -66,8 +66,8 @@ class Player:
                 if event.key == pygame.K_SPACE and self.can_dash:
                     self.dashing = True
                     self.can_dash = False
-                    pygame.time.set_timer(self.DASH_FOR, 180, loops = 1)
-                    pygame.time.set_timer(self.DASH_COOLDOWN_TIMER, 800, loops=1)
+                    pygame.time.set_timer(self.DASH_FOR, 100, loops = 1)
+                    pygame.time.set_timer(self.DASH_COOLDOWN_TIMER, 650, loops=1)
                 
             if event.type == self.DASH_FOR:
                 self.dashing = False
@@ -79,9 +79,9 @@ class Player:
 
         if not self.dashing:
             if self.moving:
-                self.velocity += self.direction * self.acceleration
+                self.velocity += self.direction * self.acceleration  * self.master.dt
             elif self.velocity.magnitude_squared() >= self.deceleration**2:
-                self.velocity -= self.velocity.normalize() * self.deceleration
+                self.velocity -= self.velocity.normalize() * self.deceleration  * self.master.dt
             else: self.velocity.update(0, 0)
 
             if (mag:=self.velocity.magnitude_squared()):
@@ -91,7 +91,9 @@ class Player:
             self.velocity = self.direction * self.dash_speed
 
         self.hitbox.centerx += self.velocity.x * self.master.dt
+        self.check_bounds_collision(0, self.master.level.bounds)
         self.hitbox.bottom += self.velocity.y * self.master.dt
+        self.check_bounds_collision(1, self.master.level.bounds)
 
     def draw(self):
 

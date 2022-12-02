@@ -1,6 +1,7 @@
 import pygame
 from .debug import Debug
 from .config import *
+import csv
 
 class World:
 
@@ -11,6 +12,9 @@ class World:
 
         self.screen = pygame.display.get_surface()
         self.offset = pygame.Vector2(0,0)
+
+        self.level = Level(master, 'test')
+        self.master.level = self.level
 
         self.debug = Debug()
         master.debug = self.debug
@@ -30,8 +34,37 @@ class World:
     def draw_background(self):
 
         self.screen.fill('lightgrey')
+        self.level.draw()
 
     def update(self):
         
-        # self.update_offset()
+        self.update_offset()
         pass
+
+class Level:
+
+    def __init__(self, master, type) -> None:
+
+        self.master = master
+        self.screen = pygame.display.get_surface()
+        
+        self.type = type
+        self.bounds = self.load_bounds()
+
+    def load_bounds(self):
+
+        bounds = []
+
+        for y, line in enumerate(csv.reader(open(F"data/{self.type}/bounds.csv"))):
+            for x, cell in enumerate(line):
+                if cell == '1':
+                    rect = pygame.Rect(x*TILESIZE, y*TILESIZE, TILESIZE, TILESIZE)
+                    bounds.append(rect)
+        return bounds
+
+    def draw(self):
+
+        for rect in self.bounds:
+            pygame.draw.rect(self.screen, "grey",
+            (rect.x + self.master.world.offset.x, rect.y + self.master.world.offset.y, rect.width, rect.height))
+        

@@ -12,6 +12,7 @@ class Master:
         self.world:World
         self.debug:Debug
         self.player:Player
+        self.level:Level
 
 class State(Enum):
 
@@ -61,8 +62,9 @@ class App:
         while True:
             
             pygame.display.update()
-            self.master.dt = self.clock.tick() / 16.667
+            self.master.dt = self.clock.tick(FPS) / 16.667
             if self.master.dt > 12: self.master.dt = 12
+            self.master.debug("FPS: ", round(self.clock.get_fps(), 2))
             self.process_events()
             self.run_app()
             pygame.event.pump()
