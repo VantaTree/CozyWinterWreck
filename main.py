@@ -11,6 +11,7 @@ class Master:
         self.game:Game
         self.world:World
         self.debug:Debug
+        self.player:Player
 
 class State(Enum):
 
@@ -23,7 +24,7 @@ class App:
     def __init__(self) -> None:
         
         #window
-        self.screen = pygame.display.set_mode((W, H), pygame.SCALED)
+        self.screen = pygame.display.set_mode((W, H), pygame.SCALED|pygame.FULLSCREEN)
         self.clock = pygame.time.Clock()
         pygame.display.set_caption("Winter Wreck Game")
         # pygame.display.set_icon()
@@ -38,11 +39,11 @@ class App:
 
     def process_events(self):
 
-        for event in pygame.event.get((pygame.QUIT)):
+        for event in pygame.event.get((pygame.QUIT, pygame.KEYUP)):
             if event.type == pygame.QUIT:
                 pygame.quit()
                 raise SystemExit
-            if event.type == pygame.KEYDOWN:
+            if event.type == pygame.KEYUP:
                 if event.key == pygame.K_ESCAPE:
                     pygame.quit()
                     raise SystemExit
