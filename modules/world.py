@@ -1,4 +1,7 @@
 import pygame
+from .player import Player
+from .entity import SpriteGroup
+from .enemy import Enemy
 from .debug import Debug
 from .config import *
 import csv
@@ -39,7 +42,7 @@ class World:
     def update(self):
         
         self.update_offset()
-        pass
+        self.level.update()
 
 class Level:
 
@@ -51,11 +54,18 @@ class Level:
         self.type = type
         self.bounds = self.load_bounds()
 
+        self.y_sort_grp = SpriteGroup(master, 'y_sort')
+        self.enemy_grp = SpriteGroup(master, 'enemies')
+
+        self.player = Player(master)
+        self.y_sort_grp.add(self.player)
+        Enemy(master, [self.y_sort_grp, self.enemy_grp], (120, 200), "enemy1", "type1")
+
     def load_bounds(self):
 
         bounds = []
 
-        for y, line in enumerate(csv.reader(open(F"data/{self.type}/bounds.csv"))):
+        for y, line in enumerate(csv.reader(open(F"data/levels/{self.type}/bounds.csv"))):
             for x, cell in enumerate(line):
                 if cell == '1':
                     rect = pygame.Rect(x*TILESIZE, y*TILESIZE, TILESIZE, TILESIZE)
@@ -67,4 +77,12 @@ class Level:
         for rect in self.bounds:
             pygame.draw.rect(self.screen, "grey",
             (rect.x + self.master.world.offset.x, rect.y + self.master.world.offset.y, rect.width, rect.height))
+
+        self.y_sort_grp.draw_y_sort(key=lambda sprite: sprite.hitbox.bottom)
+
+    
+    def update(self):
+
+        self.player.update()
+        self.enemy_grp.update()
         

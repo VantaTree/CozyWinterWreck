@@ -25,7 +25,7 @@ class App:
     def __init__(self) -> None:
         
         #window
-        self.screen = pygame.display.set_mode((W, H), pygame.SCALED|pygame.FULLSCREEN)
+        self.screen = pygame.display.set_mode((W, H), pygame.SCALED)
         self.clock = pygame.time.Clock()
         pygame.display.set_caption("Winter Wreck Game")
         # pygame.display.set_icon()

@@ -19,18 +19,23 @@ class Player(Entity):
         self.direction = pygame.Vector2(1, 0)
         self.input_direc = pygame.Vector2(0, 0)
         self.velocity = pygame.Vector2(0, 0)
-        self.acceleration = 0.8
-        self.deceleration = 1.2
-        self.max_speed = 3
+        self.acceleration = 0.6
+        self.deceleration = 1.0
+        self.max_speed = 2.2
         self.dash_speed = 12
         self.moving = False
+        self.in_control = True
+        self.invincible = False
         self.dashing = False
         self.can_dash = True
 
+        self.health = 100
+
         self.DASH_FOR = pygame.event.custom_type()
         self.DASH_COOLDOWN_TIMER = pygame.event.custom_type()
+        self.HURT_INVIS_TIMER = pygame.event.custom_type()
 
-        self.EVENTS = (pygame.KEYDOWN, self.DASH_FOR, self.DASH_COOLDOWN_TIMER
+        self.EVENTS = (pygame.KEYDOWN, self.DASH_FOR, self.DASH_COOLDOWN_TIMER, self.HURT_INVIS_TIMER
         )
 
     def update_image(self):
@@ -39,17 +44,18 @@ class Player(Entity):
 
     def get_input_and_events(self):
         
-        keys = pygame.key.get_pressed()
-
         self.input_direc.update(0, 0)
-        if keys[pygame.K_s]:
-            self.input_direc.y += 1
-        if keys[pygame.K_w]:
-            self.input_direc.y -= 1
-        if keys[pygame.K_d]:
-            self.input_direc.x += 1
-        if keys[pygame.K_a]:
-            self.input_direc.x -= 1
+
+        if  self.in_control:
+            keys = pygame.key.get_pressed()
+            if keys[pygame.K_s]:
+                self.input_direc.y += 1
+            if keys[pygame.K_w]:
+                self.input_direc.y -= 1
+            if keys[pygame.K_d]:
+                self.input_direc.x += 1
+            if keys[pygame.K_a]:
+                self.input_direc.x -= 1
         
         if self.input_direc.x and self.input_direc.y:
             self.input_direc.normalize_ip()
@@ -63,7 +69,7 @@ class Player(Entity):
         for event in pygame.event.get(self.EVENTS):
 
             if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_SPACE and self.can_dash:
+                if event.key == pygame.K_SPACE and self.in_control and self.can_dash:
                     self.dashing = True
                     self.can_dash = False
                     pygame.time.set_timer(self.DASH_FOR, 100, loops = 1)
