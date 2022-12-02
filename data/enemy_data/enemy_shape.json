@@ -1,5 +1,7 @@
 {
     "enemy1":{
-        "size": [26, 8]
+        "ground_size": [26, 8],
+        "size":[28,22],
+        "y_off": 2
     }
 }

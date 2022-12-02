@@ -34,6 +34,8 @@ class App:
         self.master = Master()
         self.master.app = self
 
+        SoundSet(self.master)
+
         self.game = Game(self.master)
 
         self.state = State.IN_GAME

@@ -35,24 +35,24 @@ class SpriteGroup:
         self.master = master
         self.screen = pygame.display.get_surface()
         self.type = type
-        self.sprite_list = []
+        self.sprites = []
 
     def add(self, sprite):
 
-        self.sprite_list.append(sprite)
+        self.sprites.append(sprite)
 
     def draw(self):
 
-        for sprite in self.sprite_list:
+        for sprite in self.sprites:
             sprite.draw()
 
     def draw_y_sort(self, key):
 
-        for sprite in sorted(self.sprite_list, key=key):
+        for sprite in sorted(self.sprites, key=key):
             sprite.draw()
 
     def update(self, *args, **kwargs):
 
-        for sprite in self.sprite_list:
+        for sprite in self.sprites:
             sprite.update(*args, **kwargs)
         

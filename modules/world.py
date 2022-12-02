@@ -56,10 +56,16 @@ class Level:
 
         self.y_sort_grp = SpriteGroup(master, 'y_sort')
         self.enemy_grp = SpriteGroup(master, 'enemies')
+        self.master.enemy_grp = self.enemy_grp
 
         self.player = Player(master)
         self.y_sort_grp.add(self.player)
-        Enemy(master, [self.y_sort_grp, self.enemy_grp], (120, 200), "enemy1", "type1")
+        Enemy(master, [self.y_sort_grp, self.enemy_grp], (200, 100), "enemy1", "type1")
+        Enemy(master, [self.y_sort_grp, self.enemy_grp], (120, 220), "enemy1", "type1")
+        Enemy(master, [self.y_sort_grp, self.enemy_grp], (120, 240), "enemy1", "type1")
+        Enemy(master, [self.y_sort_grp, self.enemy_grp], (140, 200), "enemy1", "type1")
+        Enemy(master, [self.y_sort_grp, self.enemy_grp], (160, 200), "enemy1", "type1")
+        Enemy(master, [self.y_sort_grp, self.enemy_grp], (140, 240), "enemy1", "type1")
 
     def load_bounds(self):
 

@@ -1,6 +1,7 @@
 import pygame
 from .frect import FRect
 from .entity import Entity
+from math import sin
 
 class Player(Entity):
 
@@ -12,6 +13,7 @@ class Player(Entity):
 
         self.start_pos = 100, 100
         self.hitbox= FRect(*self.start_pos, 12, 9)
+        self.sprite_box = FRect(0, 0, 8, 30)
 
         self.image = pygame.image.load("graphics/test/player.png").convert_alpha()
         self.rect = self.image.get_rect(midbottom=(self.hitbox.midbottom))
@@ -23,23 +25,48 @@ class Player(Entity):
         self.deceleration = 1.0
         self.max_speed = 2.2
         self.dash_speed = 12
+        self.kb_speed = 6
         self.moving = False
         self.in_control = True
         self.invincible = False
         self.dashing = False
         self.can_dash = True
+        self.hurting = False
 
         self.health = 100
+
+        self.hit_kb_direc = pygame.Vector2(0, 0)
+        self.invincibility_alpha = 255
 
         self.DASH_FOR = pygame.event.custom_type()
         self.DASH_COOLDOWN_TIMER = pygame.event.custom_type()
         self.HURT_INVIS_TIMER = pygame.event.custom_type()
+        self.HURTING_TIMER = pygame.event.custom_type()
 
-        self.EVENTS = (pygame.KEYDOWN, self.DASH_FOR, self.DASH_COOLDOWN_TIMER, self.HURT_INVIS_TIMER
+        self.EVENTS = (pygame.KEYDOWN, self.DASH_FOR, self.DASH_COOLDOWN_TIMER, self.HURT_INVIS_TIMER,
+        self.HURTING_TIMER
         )
+    
+    def got_hit(self, object):
+
+        self.health -= object.damage
+        self.hit_kb_direc = object.direction
+
+        self.dashing = False
+        self.in_control = False
+        self.invincible = True
+        self.hurting = True
+
+        pygame.time.set_timer(self.HURT_INVIS_TIMER, 1_200, loops=1)
+        pygame.time.set_timer(self.HURTING_TIMER, 120, loops=1)
+
+        self.master.sound.dict['damage'].play()
 
     def update_image(self):
 
+        if self.invincible:
+            self.invincibility_alpha = abs(sin(pygame.time.get_ticks())) * 255
+            self.image.set_alpha(self.invincibility_alpha)
         self.rect.midbottom = self.hitbox.midbottom
 
     def get_input_and_events(self):
@@ -74,6 +101,7 @@ class Player(Entity):
                     self.can_dash = False
                     pygame.time.set_timer(self.DASH_FOR, 100, loops = 1)
                     pygame.time.set_timer(self.DASH_COOLDOWN_TIMER, 650, loops=1)
+                    self.master.sound.dict['dash'].play()
                 
             if event.type == self.DASH_FOR:
                 self.dashing = False
@@ -81,9 +109,21 @@ class Player(Entity):
             if event.type == self.DASH_COOLDOWN_TIMER:
                 self.can_dash = True
 
+            if event.type == self.HURTING_TIMER:
+                self.in_control = True
+                self.hurting = False
+
+            if event.type == self.HURT_INVIS_TIMER:
+                self.invincible = False
+                self.image.set_alpha(255)
+
     def move(self):
 
-        if not self.dashing:
+        if self.hurting:
+            self.velocity.update(self.hit_kb_direc*self.kb_speed)
+        elif self.dashing:
+            self.velocity = self.direction * self.dash_speed
+        else:
             if self.moving:
                 self.velocity += self.direction * self.acceleration  * self.master.dt
             elif self.velocity.magnitude_squared() >= self.deceleration**2:
@@ -93,13 +133,14 @@ class Player(Entity):
             if (mag:=self.velocity.magnitude_squared()):
                 if mag > self.max_speed**2:
                     self.velocity.scale_to_length(self.max_speed)
-        else:
-            self.velocity = self.direction * self.dash_speed
+            
 
         self.hitbox.centerx += self.velocity.x * self.master.dt
         self.check_bounds_collision(0, self.master.level.bounds)
         self.hitbox.bottom += self.velocity.y * self.master.dt
         self.check_bounds_collision(1, self.master.level.bounds)
+
+        self.sprite_box.midbottom = self.hitbox.midbottom
 
     def draw(self):
 
@@ -113,5 +154,6 @@ class Player(Entity):
         self.master.debug("velocity: ", self.velocity)
         self.master.debug("dashing: ", self.dashing)
         self.master.debug("can_dash: ", self.can_dash)
+        self.master.debug("health: ", self.health)
 
 
