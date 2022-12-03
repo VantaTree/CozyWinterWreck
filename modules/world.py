@@ -1,7 +1,7 @@
 import pygame
 from .player import Player
-from .entity import SpriteGroup
-from .enemy import Enemy
+from .entity import SpriteGroup, YSortGroup
+from .enemy import Enemy, RangedEnemy
 from .debug import Debug
 from .config import *
 import csv
@@ -54,18 +54,18 @@ class Level:
         self.type = type
         self.bounds = self.load_bounds()
 
-        self.y_sort_grp = SpriteGroup(master, 'y_sort')
-        self.enemy_grp = SpriteGroup(master, 'enemies')
+        self.y_sort_grp = YSortGroup()
+        self.enemy_grp = pygame.sprite.Group()
         self.master.enemy_grp = self.enemy_grp
+        self.enemy_projectile_grp = pygame.sprite.Group()
 
-        self.player = Player(master)
-        self.y_sort_grp.add(self.player)
+        self.player = Player(master, [self.y_sort_grp])
         Enemy(master, [self.y_sort_grp, self.enemy_grp], (200, 100), "enemy1", "type1")
-        Enemy(master, [self.y_sort_grp, self.enemy_grp], (120, 220), "enemy1", "type1")
-        Enemy(master, [self.y_sort_grp, self.enemy_grp], (120, 240), "enemy1", "type1")
-        Enemy(master, [self.y_sort_grp, self.enemy_grp], (140, 200), "enemy1", "type1")
-        Enemy(master, [self.y_sort_grp, self.enemy_grp], (160, 200), "enemy1", "type1")
-        Enemy(master, [self.y_sort_grp, self.enemy_grp], (140, 240), "enemy1", "type1")
+        RangedEnemy(master, [self.y_sort_grp, self.enemy_grp], (120, 220), "enemy2", "type2")
+        RangedEnemy(master, [self.y_sort_grp, self.enemy_grp], (120, 240), "enemy2", "type2")
+        RangedEnemy(master, [self.y_sort_grp, self.enemy_grp], (140, 200), "enemy2", "type2")
+        RangedEnemy(master, [self.y_sort_grp, self.enemy_grp], (160, 200), "enemy2", "type2")
+        RangedEnemy(master, [self.y_sort_grp, self.enemy_grp], (140, 240), "enemy2", "type2")
 
     def load_bounds(self):
 
@@ -91,4 +91,5 @@ class Level:
 
         self.player.update()
         self.enemy_grp.update()
+        self.enemy_projectile_grp.update()
         

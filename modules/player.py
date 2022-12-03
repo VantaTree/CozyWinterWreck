@@ -5,8 +5,9 @@ from math import sin
 
 class Player(Entity):
 
-    def __init__(self, master):
+    def __init__(self, master, grps):
 
+        super().__init__(grps)
         self.master = master
         master.player = self
         self.screen = pygame.display.get_surface()
@@ -151,6 +152,7 @@ class Player(Entity):
         self.get_input_and_events()
         self.move()
         self.update_image()
+        self.master.debug("pos: ", self.rect.center)
         self.master.debug("velocity: ", self.velocity)
         self.master.debug("dashing: ", self.dashing)
         self.master.debug("can_dash: ", self.can_dash)

@@ -3,5 +3,11 @@
         "ground_size": [26, 8],
         "size":[28,22],
         "y_off": 2
+    },
+
+    "enemy2":{
+        "ground_size": [26, 8],
+        "size":[28,22],
+        "y_off": 2
     }
 }

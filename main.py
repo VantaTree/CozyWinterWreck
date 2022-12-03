@@ -9,10 +9,10 @@ class Master:
         self.dt:float = 0
         self.app:App
         self.game:Game
-        self.world:World
-        self.debug:Debug
-        self.player:Player
-        self.level:Level
+        # self.world:World
+        # self.debug:Debug
+        # self.player:Player
+        # self.level:Level
 
 class State(Enum):
 

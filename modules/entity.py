@@ -1,6 +1,9 @@
 import pygame
 
-class Entity:
+class Entity(pygame.sprite.Sprite):
+
+    def __init__(self, grps):
+        super().__init__(grps)
 
     def check_bounds_collision(self, axis, bounds):
 
@@ -56,3 +59,10 @@ class SpriteGroup:
         for sprite in self.sprites:
             sprite.update(*args, **kwargs)
         
+
+class YSortGroup(pygame.sprite.Group):
+
+    def draw_y_sort(self, key):
+
+        for sprite in sorted((self.sprites()), key=key):
+            sprite.draw()
