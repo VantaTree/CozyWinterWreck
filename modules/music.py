@@ -30,7 +30,6 @@ class Music:
 
         for event in pygame.event.get(self.EVENTS):
             if event.type == self.START_NEW_TRACK_TIMER:
-                print('huh?')
                 pygame.mixer.music.load(self.tracks[self.change_track_to])
                 pygame.mixer.music.play(loops=-1, fade_ms=2_000)
                 self.change_track_to = None
@@ -53,7 +52,3 @@ class Music:
         elif not self.can_play and self.is_playing:
             pygame.mixer.music.pause()
             self.is_playing = False
-
-    # def update_stage_music(self, player_stage):
-    #     self.change_track(F"stage{player_stage+1}")
-    #     # self.run()

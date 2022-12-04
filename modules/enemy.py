@@ -4,6 +4,8 @@ from .entity import Entity
 from enum import Enum
 from .weapons import Projectile
 import json
+from .engine import *
+from random import randint
 
 class State(Enum):
 
@@ -36,7 +38,7 @@ class Enemy(Entity):
         self.state = State.FOLLOWING
         self.direction = pygame.Vector2(0, 0)
         self.velocity = pygame.Vector2(0, 0)
-        self.max_speed = ENEMY_STATS[self.type]["speed"]
+        self.max_speed = ENEMY_STATS[self.type]["speed"] + randint(-1, 1)/10
         self.moving = True
         self.invincible = False
         self.hurting = False
@@ -47,9 +49,9 @@ class Enemy(Entity):
         self.damage = ENEMY_STATS[self.type]["damage"]
         self.health = ENEMY_STATS[self.type]["health"]
 
-        self.HURT_DURATION_TIMER = pygame.event.custom_type()
+        self.HURT_DURATION_TIMER = CustomTimer()
 
-        self.EVENTS = (self.HURT_DURATION_TIMER)
+        # self.EVENTS = ()
 
     def check_player_hit(self):
 
@@ -74,16 +76,16 @@ class Enemy(Entity):
         self.invincible = True
         self.hurting = True
         self.state = State.IDLE
-        pygame.time.set_timer(self.HURT_DURATION_TIMER, 100, loops=1)
+        self.HURT_DURATION_TIMER.start(100)
 
     def process_events(self):
         
-        for event in pygame.event.get(self.EVENTS):
-            if event.type == self.HURT_DURATION_TIMER:
-                self.invincible = False
-                self.hurting = False
-                self.state = State.FOLLOWING
-                self.velocity.update(0, 0)
+        # for event in pygame.event.get(self.EVENTS):
+        if self.HURT_DURATION_TIMER.check():
+            self.invincible = False
+            self.hurting = False
+            self.state = State.FOLLOWING
+            self.velocity.update(0, 0)
 
 
     def update_image(self):
@@ -134,13 +136,13 @@ class RangedEnemy(Enemy):
     def __init__(self, master, grps, start_pos, shape_type, stats_type):
         super().__init__(master, grps, start_pos, shape_type, stats_type)
 
-        self.attack_range = 100
+        self.attack_range = 100 + randint(-15, 15)
         self.can_attack = True
 
-        self.ATTACK_DELAY_TIMER = pygame.event.custom_type()
-        self.HALT_TIMER = pygame.event.custom_type()
+        self.ATTACK_DELAY_TIMER = CustomTimer()
+        self.HALT_TIMER = CustomTimer()
 
-        self.SUB_EVENTS = (self.ATTACK_DELAY_TIMER, self.HALT_TIMER)
+        # self.SUB_EVENTS = (self.ATTACK_DELAY_TIMER, self.HALT_TIMER)
 
     def attack(self):
          
@@ -154,13 +156,12 @@ class RangedEnemy(Enemy):
 
         super().process_events()
 
-        for event in pygame.event.get(self.SUB_EVENTS):
 
-            if event.type == self.ATTACK_DELAY_TIMER:
-                self.can_attack = True
+        if self.ATTACK_DELAY_TIMER.check():
+            self.can_attack = True
 
-            if event.type == self.HALT_TIMER:
-                self.state = State.FOLLOWING
+        if self.HALT_TIMER.check():
+            self.state = State.FOLLOWING
 
     def state_maneger(self):
 
@@ -168,12 +169,12 @@ class RangedEnemy(Enemy):
         if self.can_attack and ((self.sprite_box.centerx-player.sprite_box.centerx)**2 + (self.sprite_box.centery-player.sprite_box.centery)**2) < self.attack_range**2:
             self.can_attack = False
             self.attack()
-            pygame.time.set_timer(self.ATTACK_DELAY_TIMER, 5_000, loops=1)
-            pygame.time.set_timer(self.HALT_TIMER, 1_500, loops=1)
+            self.ATTACK_DELAY_TIMER.start(5_000)
+            self.HALT_TIMER.start(1_500)
             self.state = State.ATTACKING
 
     def update(self):
 
         super().update()
         self.state_maneger()
-
+        

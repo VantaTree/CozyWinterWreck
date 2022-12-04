@@ -13,7 +13,7 @@ class Player(Entity):
         master.player = self
         self.screen = pygame.display.get_surface()
 
-        self.start_pos = 100, 100
+        self.start_pos = 672, 928
         self.hitbox= FRect(*self.start_pos, 12, 9)
         self.sprite_box = FRect(0, 0, 8, 30)
 
@@ -48,9 +48,12 @@ class Player(Entity):
         self.DASH_COOLDOWN_TIMER = pygame.event.custom_type()
         self.HURT_INVIS_TIMER = pygame.event.custom_type()
         self.HURTING_TIMER = pygame.event.custom_type()
+        self.HEAL_TIMER = pygame.event.custom_type()
+
+        pygame.time.set_timer(self.HEAL_TIMER, 3_000)
 
         self.EVENTS = (pygame.KEYDOWN, self.DASH_FOR, self.DASH_COOLDOWN_TIMER, self.HURT_INVIS_TIMER,
-        self.HURTING_TIMER
+        self.HURTING_TIMER, self.HEAL_TIMER
         )
     
     def got_hit(self, object):
@@ -124,6 +127,10 @@ class Player(Entity):
             if event.type == self.HURT_INVIS_TIMER:
                 self.invincible = False
                 self.image.set_alpha(255)
+
+            if event.type == self.HEAL_TIMER and self.health < 100:
+                self.health += 1
+
 
     def move(self):
 

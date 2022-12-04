@@ -25,6 +25,8 @@ class App:
     IN_GAME = 2
 
     def __init__(self) -> None:
+
+        pygame.init()
         
         #window
         self.screen = pygame.display.set_mode((W, H), pygame.SCALED)
@@ -43,13 +45,19 @@ class App:
         self.game = Game(self.master)
         self.main_menu = MainMenu(self.master)
 
+        self.EVENT_CLEAR_TIMER = pygame.event.custom_type()
+        pygame.time.set_timer(self.EVENT_CLEAR_TIMER, 30_000)
+
 
     def process_events(self):
 
-        for event in pygame.event.get((pygame.QUIT)):
+        for event in pygame.event.get((pygame.QUIT, self.EVENT_CLEAR_TIMER)):
             if event.type == pygame.QUIT:
                 pygame.quit()
                 raise SystemExit
+            if event.type == self.EVENT_CLEAR_TIMER:
+                pygame.event.clear()
+                break
             # if event.type == pygame.KEYUP:
             #     if event.key == pygame.K_ESCAPE:
             #         pygame.quit()
@@ -80,7 +88,6 @@ class App:
 
 if __name__ == "__main__":
 
-    pygame.init()
     app = App()
     app.run()
 

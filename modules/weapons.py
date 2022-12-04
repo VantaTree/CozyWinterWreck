@@ -53,16 +53,16 @@ class SpriteAttack(pygame.sprite.Sprite):
         self.repeat = repeat
         
         self.duration = duration
-        self.KILL_TIMER = pygame.event.custom_type()
-        pygame.time.set_timer(self.KILL_TIMER, duration)
+        self.KILL_TIMER = CustomTimer()
+        self.KILL_TIMER.start(duration)
 
-        self.EVENTS = (self.KILL_TIMER)
+        # self.EVENTS = (self.KILL_TIMER)
 
     def process_events(self):
 
-        for event in pygame.event.get(self.EVENTS):
-            if event.type == self.KILL_TIMER:
-                self.kill()
+        # for event in pygame.event.get(self.EVENTS):
+        if self.KILL_TIMER.check():
+            self.kill()
 
     def check_enemy_hit(self):
 

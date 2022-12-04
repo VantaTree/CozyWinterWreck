@@ -6,6 +6,8 @@ from .enemy import Enemy, RangedEnemy
 from .debug import Debug
 from random import randint
 import csv
+from .object import Object
+import os
 
 class World:
 
@@ -18,10 +20,11 @@ class World:
         self.offset = pygame.Vector2(0,0)
 
         self.level = Level(master, 'test')
-        self.master.level = self.level
 
         self.debug = Debug()
         master.debug = self.debug
+
+        self.whole_map = pygame.image.load("graphics/map/map.png").convert()
 
     def update_offset(self):
         # self.offset =  (self.master.player.hitbox.center - pygame.Vector2(W/2, H/2)) * -1
@@ -37,7 +40,8 @@ class World:
 
     def draw_background(self):
 
-        self.screen.fill('lightgrey')
+        self.screen.fill(0x949da8)
+        self.screen.blit(self.whole_map, self.offset)
         self.level.draw()
 
     def update(self):
@@ -50,6 +54,7 @@ class Level:
     def __init__(self, master, type) -> None:
 
         self.master = master
+        master.level = self
         self.screen = pygame.display.get_surface()
         
         self.type = type
@@ -67,15 +72,23 @@ class Level:
 
         self.mask_attack_grp = CustomGroup()
 
+        self.load_objects()
+
+    def load_objects(self):
+        
+        for file in os.listdir("data/object_data"):
+            for pos in csv.reader(open(F"data/object_data/{file}")):
+                Object(self.master, [self.y_sort_grp], file[:-4], [int(i) for i in pos])
+
     def load_bounds(self):
 
         bounds = []
 
-        for y, line in enumerate(csv.reader(open(F"data/levels/{self.type}/bounds.csv"))):
-            for x, cell in enumerate(line):
-                if cell == '1':
-                    rect = pygame.Rect(x*TILESIZE, y*TILESIZE, TILESIZE, TILESIZE)
-                    bounds.append(rect)
+        for bound in csv.reader(open(F"data/levels/{self.type}/bounds.csv")):
+
+            rect = pygame.Rect(*[int(num) for num in bound])
+            bounds.append(rect)
+
         return bounds
 
     def progress_stage(self, stage):
@@ -84,9 +97,9 @@ class Level:
 
     def draw(self):
 
-        for rect in self.bounds:
-            pygame.draw.rect(self.screen, "grey",
-            (rect.x + self.master.world.offset.x, rect.y + self.master.world.offset.y, rect.width, rect.height))
+        # for rect in self.bounds:
+        #     pygame.draw.rect(self.screen, "grey",
+        #     (rect.x + self.master.world.offset.x, rect.y + self.master.world.offset.y, rect.width, rect.height))
 
         self.y_sort_grp.draw_y_sort(key=lambda sprite: sprite.hitbox.bottom)
         self.mask_attack_grp.draw()
@@ -110,9 +123,9 @@ class EnemyHandler:
 
         self.stage = 0 # 1-9 123-456-789-10
         self.enemies_required = [12, 16, 20, 26, 32, 40, 50, 64]
-        self.enemy_spawn_frq = [400,400,400,400,300,300,300,200,200]
+        # self.enemy_spawn_frq = [400,400,400,400,300,300,300,200,200]
         self.enemy_group_amount = [2,2,3,3,4,4,6,6,8]
-        self.max_enemy_count = [32,32,32,48,48,48,64,64,64]
+        self.max_enemy_count = [16,16,16,22,22,22,28,28,28]
         self.enemies_killed = 0
 
         self.enemy_types = [
@@ -129,7 +142,7 @@ class EnemyHandler:
         ]
 
         self.ENEMY_SPAWNER_TIMER = pygame.event.custom_type()
-        pygame.time.set_timer(self.ENEMY_SPAWNER_TIMER, 10_000)
+        pygame.time.set_timer(self.ENEMY_SPAWNER_TIMER, 5_000)
 
         self.EVENTS = (self.ENEMY_SPAWNER_TIMER)
 
@@ -144,21 +157,24 @@ class EnemyHandler:
 
     def enemy_spawner(self):
 
-        for _ in range(self.enemy_group_amount[self.stage]):
+        spawn_rects = (pygame.Rect(64,224,64,368), pygame.Rect(128,144,926,688), pygame.Rect(1056,192,112,544))
 
-            while True:
+        while True:
 
-                pos = randint(0, MAP_W), randint(0, MAP_H)
-                rect = pygame.Rect(-self.master.world.offset.x, -self.master.world.offset.y, W, H)
-                if not rect.collidepoint(pos): break
-
-            rnd = randint(1, 100)
-            possible_enemy:dict = self.enemy_types[self.stage]
-            for num in sorted(possible_enemy.keys()):
-                if num >= rnd:
+            pos = randint(0, MAP_W), randint(0, MAP_H)
+            rect = pygame.Rect(-self.master.world.offset.x, -self.master.world.offset.y, W, H)
+            if not rect.collidepoint(pos):
+                if any( [sp_rect.collidepoint(pos) for sp_rect in spawn_rects] ):
                     break
-            type, sprite, stats = possible_enemy[num]
 
+        rnd = randint(1, 100)
+        possible_enemy:dict = self.enemy_types[self.stage]
+        for num in sorted(possible_enemy.keys()):
+            if num >= rnd:
+                break
+        type, sprite, stats = possible_enemy[num]
+
+        for _ in range(self.enemy_group_amount[self.stage]):
             self.add_enemy(type, pos, sprite, stats)
         
     def process_events(self):

@@ -48,3 +48,26 @@ def load_pngs(folder_path):
 def dist_sq(p1, p2):
 
     return (p1[0]-p2[0])**2 + (p1[1]-p2[1])**2
+
+class CustomTimer:
+
+    def __init__(self):
+
+        self.running = False
+
+        self.duration = None
+        self.start_time = None
+
+    def start(self, duration):
+
+        self.running = True
+        self.duration = duration
+        self.start_time = pygame.time.get_ticks()
+
+    def check(self):
+
+        if not self.running: return False
+        
+        if pygame.time.get_ticks() - self.duration >= self.start_time:
+            self.running = False
+            return True
