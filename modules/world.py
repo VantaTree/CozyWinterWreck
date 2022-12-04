@@ -93,10 +93,6 @@ class Level:
 
         return bounds
 
-    def progress_stage(self, stage):
-
-        pass
-
     def draw(self):
 
         # for rect in self.bounds:
@@ -125,7 +121,7 @@ class EnemyHandler:
         self.master.enemy_handler = self
 
         self.stage = 0 # 0-8 012-345-678  $%^&*()#123-456-789-10 [1-9]
-        self.enemies_required = [8, 12, 16, 20, 26, 32, 40, 52] #[12, 16, 20, 26, 32, 40, 50, 64]
+        self.enemies_required = [1, 12, 16, 20, 26, 32, 40, 52] #[12, 16, 20, 26, 32, 40, 50, 64]
         # self.enemy_spawn_frq = [400,400,400,400,300,300,300,200,200]
         self.enemy_group_amount = [2,2,3,3,4,4,6,6,8]
         self.max_enemy_count = [16,16,16,22,22,22,28,28,28]
@@ -192,7 +188,7 @@ class EnemyHandler:
             if self.enemies_killed >= self.enemies_required[self.stage]:
                 self.stage += 1
                 self.enemies_killed = 0
-                self.master.level.progress_stage(self.stage)
+                self.master.game.progress_stage()
         except IndexError: pass
 
     def update(self):

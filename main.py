@@ -31,7 +31,7 @@ class App:
         #window
         self.screen = pygame.display.set_mode((W, H), pygame.SCALED)
         self.clock = pygame.time.Clock()
-        pygame.display.set_caption("Winter Wreck Game")
+        pygame.display.set_caption("Forgotten Memories")
         pygame.display.set_icon(pygame.image.load("graphics/extra/icon.png").convert_alpha())
 
         self.state = self.MAIN_MENU

@@ -56,19 +56,19 @@ class MainMenu():
         self.master = master
         self.master.main_menu = self
         self.screen = pygame.display.get_surface()
-        # self.mainmenu_bg = pygame.image.load("graphics/mainmenu_bg.png").convert()
-        self.title_surf = self.master.font_big.render('Winter Wreck', False, 'white')
-        self.title_rect = self.title_surf.get_rect(midtop=(W/2, 40))
-        self.title_shadow = self.master.font_big.render('Winter Wreck', False, (136, 8, 8))
-        self.title_shadow.set_alpha(200)
+        self.mainmenu_bg = pygame.image.load("graphics/extra/cover.png").convert()
+        # self.title_surf = self.master.font_big.render('Winter Wreck', False, 'white')
+        # self.title_rect = self.title_surf.get_rect(midtop=(W/2, 40))
+        # self.title_shadow = self.master.font_big.render('Winter Wreck', False, (136, 8, 8))
+        # self.title_shadow.set_alpha(200)
         self.buttons:list[Button] = []
         self.create_buttons()
         
     def create_buttons(self):
 
-        Button(self.master, (W//2, H*0.4), 'start', self.buttons)
-        Button(self.master, (W//2, H*0.5), 'fullscreen', self.buttons)
-        Button(self.master, (W//2, H*0.6), 'quit', self.buttons)
+        Button(self.master, (W//2, H*0.5), 'start', self.buttons)
+        Button(self.master, (W//2, H*0.6), 'fullscreen', self.buttons)
+        Button(self.master, (W//2, H*0.7), 'quit', self.buttons)
 
     def update(self):
         
@@ -91,9 +91,9 @@ class MainMenu():
 
         self.screen.fill((2, 10, 50))
 
-        # self.screen.blit(self.mainmenu_bg, (0, 0))
-        self.screen.blit(self.title_shadow, (self.title_rect.x-3, self.title_rect.y+3))
-        self.screen.blit(self.title_surf, self.title_rect)
+        self.screen.blit(self.mainmenu_bg, (0, 0))
+        # self.screen.blit(self.title_shadow, (self.title_rect.x-3, self.title_rect.y+3))
+        # self.screen.blit(self.title_surf, self.title_rect)
 
         for button in self.buttons:
             button.draw()

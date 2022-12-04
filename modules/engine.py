@@ -1,4 +1,5 @@
 import pygame, os
+from PIL import Image, ImageFilter
 
 class CustomGroup(pygame.sprite.Group):
 
@@ -71,3 +72,8 @@ class CustomTimer:
         if pygame.time.get_ticks() - self.duration >= self.start_time:
             self.running = False
             return True
+
+def blur_image(image, radius=6):
+    raw_str = pygame.image.tostring(image, 'RGBA')
+    pil_blured = Image.frombytes("RGBA", image.get_size(), raw_str).filter(ImageFilter.GaussianBlur(radius=radius))
+    return pygame.image.fromstring(pil_blured.tobytes("raw", 'RGBA'), image.get_size(), 'RGBA')

@@ -17,7 +17,8 @@ class Player(Entity):
         self.hitbox= FRect(*self.start_pos, 12, 9)
         self.sprite_box = FRect(0, 0, 8, 30)
 
-        self.image = pygame.image.load("graphics/test/player.png").convert_alpha()
+        self.original_image = pygame.image.load("graphics/test/player.png").convert_alpha()
+        self.image = self.original_image.copy()
         self.rect = self.image.get_rect(midbottom=(self.hitbox.midbottom))
 
         self.direction = pygame.Vector2(1, 0)
@@ -36,7 +37,7 @@ class Player(Entity):
         self.hurting = False
 
         self.max_health = 100
-        self.health = 100
+        self.health = self.max_health
 
         self.hit_kb_direc = pygame.Vector2(0, 0)
         self.invincibility_alpha = 255
@@ -44,6 +45,8 @@ class Player(Entity):
         self.enemies_killed = 0
 
         self.attack_handler = PlayerAttack(master)
+
+        self.dead = False
 
         self.DASH_FOR = pygame.event.custom_type()
         self.DASH_COOLDOWN_TIMER = pygame.event.custom_type()
@@ -60,6 +63,10 @@ class Player(Entity):
     def got_hit(self, object):
 
         self.health -= object.damage
+        if self.health <= 0:
+            self.dead = True
+            return
+
         self.hit_kb_direc = object.direction
 
         self.dashing = False
@@ -73,6 +80,9 @@ class Player(Entity):
         self.master.sound.dict['damage'].play()
 
     def update_image(self):
+
+        flip = self.velocity.x < 0
+        self.image = pygame.transform.flip(self.original_image, flip, False)
 
         if self.invincible:
             self.invincibility_alpha = abs(sin(pygame.time.get_ticks())) * 255
