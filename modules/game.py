@@ -15,6 +15,12 @@ class Game:
 
         self.paused = False
 
+    def pause_game(self):
+
+        if not self.paused:
+            self.paused = True
+            self.pause_menu.open()
+
     
     def draw(self):
 

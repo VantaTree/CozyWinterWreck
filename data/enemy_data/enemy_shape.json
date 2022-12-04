@@ -9,5 +9,17 @@
         "ground_size": [26, 8],
         "size":[28,22],
         "y_off": 2
+    },
+
+    "monster1":{
+        "ground_size": [18, 8],
+        "size":[16,27],
+        "y_off": 2
+    },
+
+    "monster_r":{
+        "ground_size": [16, 8],
+        "size":[16,29],
+        "y_off": 1
     }
 }

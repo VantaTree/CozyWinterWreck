@@ -12,3 +12,5 @@ class SoundSet:
         for sound_file in os.listdir("sounds"):
             if not sound_file.endswith(".ogg"): continue
             self.dict[sound_file[:-4]] = pygame.mixer.Sound(F"sounds/{sound_file}")
+        
+        self.dict["fireball_hit"].set_volume(0.4)

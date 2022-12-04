@@ -78,7 +78,7 @@ class MainMenu():
                     action = button.interact(event.pos, click=True)
                     if action == 'start':
                         self.master.music.change_track("in_game")
-                        # self.master.sounds.start_game()
+                        self.master.sound.dict["start_button"].play()
                         self.master.app.state = self.master.app.IN_GAME
                     elif action == 'fullscreen':
                         pygame.display.toggle_fullscreen()
@@ -127,7 +127,7 @@ class PauseMenu():
 
     def open(self):
         self.bg = self.screen.copy()
-        self.master.sounds.click.play()
+        self.master.sound.dict["button_click"].play()
 
     def update(self):
         

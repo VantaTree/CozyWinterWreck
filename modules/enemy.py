@@ -32,7 +32,8 @@ class Enemy(Entity):
         self.hitbox = FRect(*self.start_pos, *ENEMY_SHAPE[shape_type]["ground_size"])
         self.sprite_box = FRect(0, 0, *ENEMY_SHAPE[shape_type]["size"])
 
-        self.image = pygame.image.load(F"graphics/enemies/{shape_type}.png").convert_alpha()
+        self.original_image = pygame.image.load(F"graphics/enemies/{shape_type}.png").convert_alpha()
+        self.image = self.original_image
         self.rect = self.image.get_rect(midbottom=(self.hitbox.midbottom))
 
         self.state = State.FOLLOWING
@@ -92,6 +93,8 @@ class Enemy(Entity):
 
         # if self.hurting:
         #     self.image.fill((255,0,0), special_flags=pygame.BLEND_RGB_MULT)
+        flip = self.velocity.x < 0
+        self.image = pygame.transform.flip(self.original_image, flip, False)
         self.rect.midbottom = self.hitbox.midbottom
 
     def move(self):
@@ -149,6 +152,7 @@ class RangedEnemy(Enemy):
         proj = Projectile(self.master,
         [self.master.level.enemy_projectile_grp, self.master.level.y_sort_grp],
         "projectile_black", self.sprite_box.center, self.direction, 1, 15)
+        self.master.sound.dict["fireball"].play()
 
         proj.check_hit = proj.check_player_hit
 

@@ -35,6 +35,7 @@ class Player(Entity):
         self.can_dash = True
         self.hurting = False
 
+        self.max_health = 100
         self.health = 100
 
         self.hit_kb_direc = pygame.Vector2(0, 0)
@@ -112,7 +113,7 @@ class Player(Entity):
                     pygame.time.set_timer(self.DASH_COOLDOWN_TIMER, 650, loops=1)
                     self.master.sound.dict['dash'].play()
                 if event.key == pygame.K_ESCAPE:
-                    self.master.game.paused = True
+                    self.master.game.pause_game()
                 
             if event.type == self.DASH_FOR:
                 self.dashing = False
@@ -128,7 +129,7 @@ class Player(Entity):
                 self.invincible = False
                 self.image.set_alpha(255)
 
-            if event.type == self.HEAL_TIMER and self.health < 100:
+            if event.type == self.HEAL_TIMER and self.health < self.max_health:
                 self.health += 1
 
 

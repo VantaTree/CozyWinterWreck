@@ -1,5 +1,6 @@
 import pygame
 from .engine import *
+from random import choice
 
 attack_animations = {}
 
@@ -10,23 +11,69 @@ class PlayerAttack:
         self.master = master
         self.player = self.master.player
         attack_animations.update(import_sprite_sheets("graphics/attacks"))
+        attack_animations["slash_flipped"] = [pygame.transform.flip(img, True, True) for img in attack_animations["slash"]]
 
-        self.slash_duration = 800
+        self.slash_damage = [8, 8, 10, 10, 12, 12, 15, 15, 15]
+        self.proj_damage = [0, 0, 0, 8, 8, 11, 11, 15, 15]
+        self.proj_resistance = [0, 0, 0, 1, 1, 1, 2, 2, 2]
+        self.poison_damage = [0, 0, 0, 0, 0, 0, 3, 3, 6]
+
+        self.slash_duration = 1_600
+        self.proj_duration = 3_500
+        self.poison_duration = 2_500
 
         self.SPAWN_SLASH_TIMER = pygame.event.custom_type()
+        self.SPAWN_PROJ_TIMER = pygame.event.custom_type()
+        self.SPAWN_POISON_TIMER = pygame.event.custom_type()
         
         pygame.time.set_timer(self.SPAWN_SLASH_TIMER, self.slash_duration)
+        pygame.time.set_timer(self.SPAWN_PROJ_TIMER, self.proj_duration)
+        pygame.time.set_timer(self.SPAWN_POISON_TIMER, self.poison_duration)
 
-        self.EVENTS = (self.SPAWN_SLASH_TIMER)
+        self.EVENTS = (self.SPAWN_SLASH_TIMER, self.SPAWN_PROJ_TIMER, self.SPAWN_POISON_TIMER)
 
     def process_events(self):
 
+        stage = self.master.enemy_handler.stage
+
         for event in pygame.event.get(self.EVENTS):
             if event.type == self.SPAWN_SLASH_TIMER:
-                SpriteAttack(self.master, [self.master.level.mask_attack_grp],
-                "slash", (self.player.sprite_box.centerx + 10, self.player.sprite_box.centery - 20),
-                15)
+                damage = self.slash_damage[stage]
+                SpriteAttack(self.master, [self.master.level.mask_attack_grp], "slash", (10, -20), damage, repeat=False, anim_speed=0.52)
+                if stage >= 1:
+                    SpriteAttack(self.master, [self.master.level.mask_attack_grp], "slash_flipped", (-10, 20), damage, repeat=False, anim_speed=0.52)
+                    self.master.sound.dict["slash_attack_2"].play()
+                else: self.master.sound.dict["slash_attack_2"].play()
 
+            if event.type == self.SPAWN_PROJ_TIMER:
+                if stage < 3: continue
+
+                enemy_sprites = list(self.master.level.enemy_grp.sprites())
+                if not enemy_sprites: continue
+
+                damage = self.proj_damage[stage]
+                res = self.proj_resistance[stage]
+                amount = stage - 2
+                if amount <= 0: amount = 1
+                elif amount > 3: amount = 3
+
+                for _ in range(amount):
+                    direction = - choice(enemy_sprites).direction
+                    proj = Projectile(self.master, [self.master.level.y_sort_grp, self.master.level.enemy_projectile_grp],
+                    'projectile_black', self.master.player.sprite_box.center, direction, 3, damage, res)
+                    proj.check_hit = proj.check_enemy_hit
+                self.master.sound.dict["fireball"].play()
+
+            if event.type == self.SPAWN_POISON_TIMER:
+                if stage < 6: continue
+
+                damage = self.poison_damage[stage]
+                if stage == 6:
+                    SpriteAttack(self.master, [self.master.level.mask_attack_grp], "poison_med", (0, 0), damage, repeat=False, anim_speed = 0.08)
+                elif stage >= 7:
+                    SpriteAttack(self.master, [self.master.level.mask_attack_grp], "poison_big", (0, 0), damage, repeat=False, anim_speed = 0.08)
+                self.master.sound.dict["poison_attack"].play()
+                
     def update(self):
 
         self.process_events()
@@ -34,14 +81,15 @@ class PlayerAttack:
 
 class SpriteAttack(pygame.sprite.Sprite):
 
-    def __init__(self, master, grps, anim, pos, power, duration=80, repeat=True, anim_speed=0.15) -> None:
+    def __init__(self, master, grps, anim, offset, power, duration=80, repeat=True, anim_speed=0.15) -> None:
 
         super().__init__(grps)
         self.master = master
 
         self.screen = pygame.display.get_surface()
 
-        self.pos = pygame.Vector2(pos)
+        self.pos = pygame.Vector2(offset) + self.master.player.sprite_box.center
+        self.type = anim
         self.animation = attack_animations[anim]
         self.image = self.animation[0]
         self.rect = self.image.get_rect(center=self.pos)
@@ -54,7 +102,8 @@ class SpriteAttack(pygame.sprite.Sprite):
         
         self.duration = duration
         self.KILL_TIMER = CustomTimer()
-        self.KILL_TIMER.start(duration)
+        if repeat:
+            self.KILL_TIMER.start(duration)
 
         # self.EVENTS = (self.KILL_TIMER)
 
@@ -71,7 +120,10 @@ class SpriteAttack(pygame.sprite.Sprite):
                 attack_mask = pygame.mask.from_surface(self.image)
                 enemy_mask = pygame.mask.Mask(enemy.sprite_box.size, True)
                 if attack_mask.overlap(enemy_mask, (enemy.sprite_box.x-self.rect.x, enemy.sprite_box.y-self.rect.y)):
-                    enemy.got_hit(self.power, -enemy.direction)
+                    if 'poison' in self.type:
+                        enemy.got_hit(self.power, pygame.Vector2(0, 0))
+                    else:
+                        enemy.got_hit(self.power, -enemy.direction)
 
     def update_image(self):
 
@@ -128,17 +180,20 @@ class Projectile(pygame.sprite.Sprite):
 
     def check_hit(self): pass
 
+
     def check_player_hit(self):
 
-        if not self.master.player.invincible and self.master.player.sprite_box.colliderect(self.rect):
+        if not self.master.player.invincible and self.master.player.sprite_box.collidepoint(self.pos):
             self.master.player.got_hit(self)
+            self.master.sound.dict["fireball_hit"].play()
             self.kill()
 
     def check_enemy_hit(self):
 
         for enemy in self.master.level.enemy_grp.sprites():
-            if not enemy.invincible and enemy.sprite_box.colliderect(self.rect):
+            if not enemy.invincible and enemy.sprite_box.collidepoint(self.pos):
                 enemy.got_hit(self.damage, self.direction)
+                # self.master.sound.dict["fireball_hit"].play()
                 self.resistance -= 1
                 if self.resistance <= 0:
                     self.kill()

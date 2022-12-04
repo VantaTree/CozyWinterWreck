@@ -6,7 +6,7 @@ class Master:
     
     def __init__(self) -> None:
 
-        self.font = pygame.font.SysFont("Ariel", 26)
+        self.font = pygame.font.SysFont("Ariel", 22)
         self.font_big = pygame.font.SysFont("Ariel", 32)
 
         self.dt:float = 0
@@ -32,7 +32,7 @@ class App:
         self.screen = pygame.display.set_mode((W, H), pygame.SCALED)
         self.clock = pygame.time.Clock()
         pygame.display.set_caption("Winter Wreck Game")
-        # pygame.display.set_icon()
+        pygame.display.set_icon(pygame.image.load("graphics/extra/icon.png").convert_alpha())
 
         self.state = self.MAIN_MENU
         #init
@@ -80,7 +80,7 @@ class App:
             pygame.display.update()
             self.master.dt = self.clock.tick(FPS) / 16.667
             if self.master.dt > 12: self.master.dt = 12
-            self.master.debug("FPS: ", round(self.clock.get_fps(), 2))
+            if not self.master.game.paused: self.master.debug("FPS: ", round(self.clock.get_fps(), 2))
             self.process_events()
             self.run_app()
             pygame.event.pump()

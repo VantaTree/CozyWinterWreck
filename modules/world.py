@@ -8,6 +8,7 @@ from random import randint
 import csv
 from .object import Object
 import os
+from .ui import PlayerUI
 
 class World:
 
@@ -67,6 +68,7 @@ class Level:
         self.enemy_projectile_grp = pygame.sprite.Group()
 
         self.player = Player(master, [self.y_sort_grp])
+        self.player_ui = PlayerUI(master)
 
         self.enemy_spawner = EnemyHandler(master)
 
@@ -103,6 +105,7 @@ class Level:
 
         self.y_sort_grp.draw_y_sort(key=lambda sprite: sprite.hitbox.bottom)
         self.mask_attack_grp.draw()
+        self.player_ui.draw()
 
     
     def update(self):
@@ -121,28 +124,28 @@ class EnemyHandler:
         self.master = master
         self.master.enemy_handler = self
 
-        self.stage = 0 # 1-9 123-456-789-10
-        self.enemies_required = [12, 16, 20, 26, 32, 40, 50, 64]
+        self.stage = 0 # 0-8 012-345-678  $%^&*()#123-456-789-10 [1-9]
+        self.enemies_required = [8, 12, 16, 20, 26, 32, 40, 52] #[12, 16, 20, 26, 32, 40, 50, 64]
         # self.enemy_spawn_frq = [400,400,400,400,300,300,300,200,200]
         self.enemy_group_amount = [2,2,3,3,4,4,6,6,8]
         self.max_enemy_count = [16,16,16,22,22,22,28,28,28]
         self.enemies_killed = 0
 
         self.enemy_types = [
-            {100:('Z', 'enemy1', 'type1')},
-            {80 :('Z', 'enemy1', 'type1'), 100:('R', 'enemy2', 'type2')},
-            {70 :('Z', 'enemy1', 'type1'), 100:('R', 'enemy2', 'type2')},
-            {60 :('Z', 'enemy1', 'type1'), 100:('R', 'enemy2', 'type2')},
-            {60 :('Z', 'enemy1', 'type1'), 100:('R', 'enemy2', 'type2')},
-            {60 :('Z', 'enemy1', 'type1'), 100:('R', 'enemy2', 'type2')},
-            {60 :('Z', 'enemy1', 'type1'), 100:('R', 'enemy2', 'type2')},
-            {60 :('Z', 'enemy1', 'type1'), 100:('R', 'enemy2', 'type2')},
-            {60 :('Z', 'enemy1', 'type1'), 100:('R', 'enemy2', 'type2')},
-            {60 :('Z', 'enemy1', 'type1'), 100:('R', 'enemy2', 'type2')},
+            {100:('Z', 'monster1', 'type1')},
+            {80 :('Z', 'monster1', 'type1'), 100:('R', 'monster_r', 'type2')},
+            {70 :('Z', 'monster1', 'type1'), 100:('R', 'monster_r', 'type2')},
+            {60 :('Z', 'monster1', 'type1'), 100:('R', 'monster_r', 'type2')},
+            {60 :('Z', 'monster1', 'type1'), 100:('R', 'monster_r', 'type2')},
+            {60 :('Z', 'monster1', 'type1'), 100:('R', 'monster_r', 'type2')},
+            {60 :('Z', 'monster1', 'type1'), 100:('R', 'monster_r', 'type2')},
+            {60 :('Z', 'monster1', 'type1'), 100:('R', 'monster_r', 'type2')},
+            {60 :('Z', 'monster1', 'type1'), 100:('R', 'monster_r', 'type2')},
+            {60 :('Z', 'monster1', 'type1'), 100:('R', 'monster_r', 'type2')},
         ]
 
         self.ENEMY_SPAWNER_TIMER = pygame.event.custom_type()
-        pygame.time.set_timer(self.ENEMY_SPAWNER_TIMER, 5_000)
+        pygame.time.set_timer(self.ENEMY_SPAWNER_TIMER, 3_300)
 
         self.EVENTS = (self.ENEMY_SPAWNER_TIMER)
 
