@@ -37,7 +37,7 @@ class Game:
 
 
         self.world.draw_foreground()
-        self.world.draw_debug()
+        # self.world.draw_debug()
 
     def process_events(self):
         pass

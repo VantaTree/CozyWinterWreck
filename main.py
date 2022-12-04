@@ -80,7 +80,7 @@ class App:
             pygame.display.update()
             self.master.dt = self.clock.tick(FPS) / 16.667
             if self.master.dt > 12: self.master.dt = 12
-            if not self.master.game.paused: self.master.debug("FPS: ", round(self.clock.get_fps(), 2))
+            # if not self.master.game.paused: self.master.debug("FPS: ", round(self.clock.get_fps(), 2))
             self.process_events()
             self.run_app()
             pygame.event.pump()

@@ -22,8 +22,8 @@ class World:
 
         self.level = Level(master, 'test')
 
-        self.debug = Debug()
-        master.debug = self.debug
+        # self.debug = Debug()
+        # master.debug = self.debug
 
         self.whole_map = pygame.image.load("graphics/map/map.png").convert()
 
@@ -33,8 +33,8 @@ class World:
         if self.master.player.dashing: camera_rigidness = 0.22
         self.offset -= (self.offset + (self.master.player.hitbox.center - pygame.Vector2(W/2, H/2))) * camera_rigidness * self.master.dt
 
-    def draw_debug(self):
-        self.debug.draw()
+    # def draw_debug(self):
+    #     self.debug.draw()
 
     def draw_foreground(self):
         pass
@@ -111,7 +111,7 @@ class Level:
         self.enemy_projectile_grp.update()
         self.enemy_spawner.update()
         self.mask_attack_grp.update()
-        self.master.debug("count: ", len(self.enemy_grp))
+        # self.master.debug("count: ", len(self.enemy_grp))
         
 class EnemyHandler:
 
@@ -121,7 +121,7 @@ class EnemyHandler:
         self.master.enemy_handler = self
 
         self.stage = 0 # 0-8 012-345-678  $%^&*()#123-456-789-10 [1-9]
-        self.enemies_required = [1, 12, 16, 20, 26, 32, 40, 52] #[12, 16, 20, 26, 32, 40, 50, 64]
+        self.enemies_required = [8, 12, 16, 20, 26, 32, 40, 52] #[12, 16, 20, 26, 32, 40, 50, 64]
         # self.enemy_spawn_frq = [400,400,400,400,300,300,300,200,200]
         self.enemy_group_amount = [2,2,3,3,4,4,6,6,8]
         self.max_enemy_count = [16,16,16,22,22,22,28,28,28]
@@ -195,4 +195,4 @@ class EnemyHandler:
 
         self.process_events()
         self.check_stage_progress()
-        self.master.debug("Stage: ", self.stage)
+        # self.master.debug("Stage: ", self.stage)
