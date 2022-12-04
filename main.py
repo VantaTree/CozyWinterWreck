@@ -6,21 +6,23 @@ class Master:
     
     def __init__(self) -> None:
 
+        self.font = pygame.font.SysFont("Ariel", 26)
+        self.font_big = pygame.font.SysFont("Ariel", 32)
+
         self.dt:float = 0
         self.app:App
         self.game:Game
+        self.sound:SoundSet
+        self.music:Music
         # self.world:World
         # self.debug:Debug
         # self.player:Player
         # self.level:Level
 
-class State(Enum):
+class App:
 
     MAIN_MENU = 1
     IN_GAME = 2
-
-
-class App:
 
     def __init__(self) -> None:
         
@@ -30,32 +32,36 @@ class App:
         pygame.display.set_caption("Winter Wreck Game")
         # pygame.display.set_icon()
 
+        self.state = self.MAIN_MENU
         #init
         self.master = Master()
         self.master.app = self
 
         SoundSet(self.master)
+        self.music = Music(self.master)
 
         self.game = Game(self.master)
+        self.main_menu = MainMenu(self.master)
 
-        self.state = State.IN_GAME
 
     def process_events(self):
 
-        for event in pygame.event.get((pygame.QUIT, pygame.KEYUP)):
+        for event in pygame.event.get((pygame.QUIT)):
             if event.type == pygame.QUIT:
                 pygame.quit()
                 raise SystemExit
-            if event.type == pygame.KEYUP:
-                if event.key == pygame.K_ESCAPE:
-                    pygame.quit()
-                    raise SystemExit
+            # if event.type == pygame.KEYUP:
+            #     if event.key == pygame.K_ESCAPE:
+            #         pygame.quit()
+            #         raise SystemExit
 
     def run_app(self):
 
-        if self.state == State.MAIN_MENU:
-            pass
-        elif self.state == State.IN_GAME:
+        self.music.run()
+
+        if self.state == self.MAIN_MENU:
+            self.main_menu.run()
+        elif self.state == self.IN_GAME:
             self.game.run()
 
 

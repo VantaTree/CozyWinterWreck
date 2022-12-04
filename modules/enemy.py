@@ -2,6 +2,7 @@ import pygame
 from .frect import FRect
 from .entity import Entity
 from enum import Enum
+from .weapons import Projectile
 import json
 
 class State(Enum):
@@ -36,13 +37,19 @@ class Enemy(Entity):
         self.direction = pygame.Vector2(0, 0)
         self.velocity = pygame.Vector2(0, 0)
         self.max_speed = ENEMY_STATS[self.type]["speed"]
-        self.acceleration = ENEMY_STATS[self.type]["acceleration"]
-        self.deceleration = ENEMY_STATS[self.type]["deceleration"]
         self.moving = True
+        self.invincible = False
+        self.hurting = False
+
+        self.kb_direction = pygame.Vector2(0, 0)
+        self.kb_speed = 6
 
         self.damage = ENEMY_STATS[self.type]["damage"]
+        self.health = ENEMY_STATS[self.type]["health"]
 
-        self.EVENTS = ()
+        self.HURT_DURATION_TIMER = pygame.event.custom_type()
+
+        self.EVENTS = (self.HURT_DURATION_TIMER)
 
     def check_player_hit(self):
 
@@ -50,18 +57,46 @@ class Enemy(Entity):
 
             self.master.player.got_hit(self)
 
+    def die(self):
+        
+        self.master.enemy_handler.enemies_killed += 1
+        self.kill()
+
+    def got_hit(self, power, kb_direction):
+
+        if self.invincible: return
+
+        self.health -= power
+        if self.health <= 0:
+            self.die()
+            return
+        self.kb_direction:pygame.Vector2 = kb_direction
+        self.invincible = True
+        self.hurting = True
+        self.state = State.IDLE
+        pygame.time.set_timer(self.HURT_DURATION_TIMER, 100, loops=1)
+
     def process_events(self):
-        pass
+        
+        for event in pygame.event.get(self.EVENTS):
+            if event.type == self.HURT_DURATION_TIMER:
+                self.invincible = False
+                self.hurting = False
+                self.state = State.FOLLOWING
+                self.velocity.update(0, 0)
+
 
     def update_image(self):
 
+        # if self.hurting:
+        #     self.image.fill((255,0,0), special_flags=pygame.BLEND_RGB_MULT)
         self.rect.midbottom = self.hitbox.midbottom
 
     def move(self):
 
         if self.state == State.FOLLOWING:
                 self.direction = (self.master.player.sprite_box.center + pygame.Vector2(0, 0) - self.sprite_box.center).normalize()
-                self.velocity += self.direction * self.acceleration  * self.master.dt
+                self.velocity = self.direction * self.max_speed
 
                 for enemy in self.master.enemy_grp.sprites():
                     if enemy == self: continue
@@ -69,15 +104,10 @@ class Enemy(Entity):
                         try:
                             self.velocity += (self.sprite_box.center + pygame.Vector2(0, 0) - enemy.sprite_box.center).normalize()
                         except ValueError: pass
-
+        elif self.hurting:
+            self.velocity.update(self.kb_direction*self.kb_speed*self.master.dt)
         else:
-            if self.velocity.magnitude_squared() >= self.deceleration**2:
-                self.velocity -= self.velocity.normalize() * self.deceleration  * self.master.dt
-            else: self.velocity.update(0, 0)
-
-        if (mag:=self.velocity.magnitude_squared()):
-            if mag > self.max_speed**2:
-                    self.velocity.scale_to_length(self.max_speed)
+            self.velocity.update(0, 0)
 
         self.hitbox.centerx += self.velocity.x * self.master.dt
         self.check_bounds_collision(0, self.master.level.bounds)
@@ -98,12 +128,12 @@ class Enemy(Entity):
         self.check_player_hit()
         self.update_image()
 
+
 class RangedEnemy(Enemy):
 
     def __init__(self, master, grps, start_pos, shape_type, stats_type):
         super().__init__(master, grps, start_pos, shape_type, stats_type)
 
-        self.projec_image = pygame.image.load("graphics/test/projectile.png").convert_alpha()
         self.attack_range = 100
         self.can_attack = True
 
@@ -114,10 +144,11 @@ class RangedEnemy(Enemy):
 
     def attack(self):
          
-        Projectile(self.master,
+        proj = Projectile(self.master,
         [self.master.level.enemy_projectile_grp, self.master.level.y_sort_grp],
-        self.projec_image, self.sprite_box.center, self.direction)
-        
+        "projectile_black", self.sprite_box.center, self.direction, 1, 15)
+
+        proj.check_hit = proj.check_player_hit
 
     def process_events(self):
 
@@ -146,47 +177,3 @@ class RangedEnemy(Enemy):
         super().update()
         self.state_maneger()
 
-
-class Projectile(pygame.sprite.Sprite):
-
-    def __init__(self, master, grps, image, pos, direction):
-
-        super().__init__(grps)
-        self.master = master
-        self.screen = pygame.display.get_surface()
-
-        self.image = image
-        self.pos = pygame.Vector2(pos)
-        self.rect = self.image.get_rect(center=self.pos)
-        self.hitbox = self.rect
-
-        self.direction:pygame.Vector2 = direction
-        self.speed = 4
-        self.damage = 15
-
-    def check_bounds_coll(self):
-
-        for rect in self.master.level.bounds:
-            if self.rect.colliderect(rect):
-                self.kill()
-
-    def check_player_hit(self):
-
-        if not self.master.player.invincible and self.master.player.sprite_box.colliderect(self.rect):
-            self.master.player.got_hit(self)
-            self.kill()
-
-    def move(self):
-
-        self.pos += self.direction * self.speed * self.master.dt
-        self.rect.center = self.pos
-
-    def draw(self):
-        
-        self.screen.blit(self.image, self.rect.topleft+self.master.world.offset)
-
-    def update(self):
-
-        self.move()
-        self.check_bounds_coll()
-        self.check_player_hit()

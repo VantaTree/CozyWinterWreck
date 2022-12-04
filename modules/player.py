@@ -2,6 +2,7 @@ import pygame
 from .frect import FRect
 from .entity import Entity
 from math import sin
+from .weapons import PlayerAttack
 
 class Player(Entity):
 
@@ -26,7 +27,7 @@ class Player(Entity):
         self.deceleration = 1.0
         self.max_speed = 2.2
         self.dash_speed = 12
-        self.kb_speed = 6
+        self.kb_speed = 4
         self.moving = False
         self.in_control = True
         self.invincible = False
@@ -38,6 +39,10 @@ class Player(Entity):
 
         self.hit_kb_direc = pygame.Vector2(0, 0)
         self.invincibility_alpha = 255
+
+        self.enemies_killed = 0
+
+        self.attack_handler = PlayerAttack(master)
 
         self.DASH_FOR = pygame.event.custom_type()
         self.DASH_COOLDOWN_TIMER = pygame.event.custom_type()
@@ -103,6 +108,8 @@ class Player(Entity):
                     pygame.time.set_timer(self.DASH_FOR, 100, loops = 1)
                     pygame.time.set_timer(self.DASH_COOLDOWN_TIMER, 650, loops=1)
                     self.master.sound.dict['dash'].play()
+                if event.key == pygame.K_ESCAPE:
+                    self.master.game.paused = True
                 
             if event.type == self.DASH_FOR:
                 self.dashing = False
@@ -152,6 +159,7 @@ class Player(Entity):
         self.get_input_and_events()
         self.move()
         self.update_image()
+        self.attack_handler.update()
         self.master.debug("pos: ", self.rect.center)
         self.master.debug("velocity: ", self.velocity)
         self.master.debug("dashing: ", self.dashing)
